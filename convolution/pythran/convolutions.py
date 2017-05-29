@@ -42,55 +42,61 @@ class convolv_matrix(convolution):
         return type(image)(from_array=fun(image.pixels, self.__convolution_array__))
 
 if __name__ == '__main__':
-    import time
+    import perf
+    import sys
     from scipy.misc.pilutil import imread
     import gray_image as gimage
     import rgb_image as cimage
     img = gimage.gray_image(fileName='../data/lena.png')
     img_skel = gimage.gray_image(fileName='../data/squelette.png')
     cimg = cimage.rgb_image(fileName='../data/lena_rgb.png')
+
+    show = len(sys.argv) > 1 and sys.argv[1] == "show"
+    if not show:
+        runner = perf.Runner()
+
     lapl = laplacien()
-    start = time.time()
-    output_img = lapl.convolve(img)
-    end   = time.time()
-    print("Temps mis pour calculer laplacien de lena en gris : {} secondes".format(end-start))
-    output_img.show()
-    start = time.time()
-    output_img = lapl.convolve(cimg)
-    end   = time.time()
-    print("Temps mis pour calculer laplacien de lena en couleur : {} secondes".format(end-start))
-    output_img.show()
-    output_img.save(fileName='lena_contour_rgb.png')
+    if show:
+        output_img = lapl.convolve(img)
+        output_img.show()
+    else:
+        runner.bench_func('laplacien/grayscale', lambda: lapl.convolve(img))
+
+    if show:
+        output_img = lapl.convolve(cimg)
+        output_img.show()
+    else:
+        runner.bench_func('laplacien/color', lambda: lapl.convolve(cimg))
+
     m = mean()
-    start = time.time()
-    output_img = m.convolve(cimg)
-    end   = time.time()
-    print("Temps mis pour calculer moyenne de lena en couleur : {} secondes".format(end-start))
-    output_img.show()
+    if show:
+        output_img = m.convolve(cimg)
+        output_img.show()
+    else:
+        runner.bench_func('mean/color', lambda: m.convolve(cimg))
 
     # Matrice de convolution pour detection de bord amelioree :
     convol = np.array([[-1,-1,-1],[-1,8,-1],[-1,-1,-1]],np.double)
     f = convolv_matrix(convol)
-    start = time.time()
-    output_img = f.convolve(img)
-    end   = time.time()
-    print("Temps mis pour calculer convolution contour ameliore de lena en gris : {} secondes".format(end-start))
-    output_img.show()
+    if show:
+        output_img = f.convolve(img)
+        output_img.show()
+    else:
+        runner.bench_func('border/grayscale', lambda: f.convolve(img))
 
     # Matrice de convolution pour preciser les contours d'une image ( sharpen )
     convol = np.array([[0,-1,0],[-1,5,-1],[0,-1,0]],np.double)
     f = convolv_matrix(convol)
-    start = time.time()
-    output_img = f.convolve(img_skel)
-    end   = time.time()
-    print("Temps mis pour calculer convolution sharpen de squelette en gris : {} secondes".format(end-start))
-    output_img.show()
-
+    if show:
+        output_img = f.convolve(img_skel)
+        output_img.show()
+    else:
+        runner.bench_func('sharpen/grayscale', lambda: f.convolve(img_skel))
     # Matrice de convolution pour faire du Gaussian blur avec un stencil de 5x5
     convol = (1./256.)*np.array([[1,4,6,4,1],[4,16,24,16,4],[6,24,36,24,6],[4,16,24,16,4],[1,4,6,4,1]],np.double)
     f = convolv_matrix(convol)
-    start = time.time()
-    output_img = f.convolve(cimg)
-    end   = time.time()
-    print("Temps mis pour calculer convolution gaussian blur 5x5 de lena en couleur : {} secondes".format(end-start))
-    output_img.show()
+    if show:
+        output_img = f.convolve(cimg)
+        output_img.show()
+    else:
+        runner.bench_func('blur/grayscale', lambda: f.convolve(img_skel))
