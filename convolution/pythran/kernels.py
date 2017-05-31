@@ -102,5 +102,3 @@ def convolve_matrix3(image, convolution_array) :
     valmax = max(1.,valmax)+1.E-9
     out_image *= 1./valmax
     return out_image
-
-
