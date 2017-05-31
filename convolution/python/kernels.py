@@ -4,8 +4,6 @@ import numpy as np
 Definit une convolution faisant une moyenne des voisins d'un pixel donne
 ( stencil de 3x3 )
 """
-#pythran export convolve_mean2(float64[][])
-#pythran export convolve_mean3(float64[][][])
 def convolve_mean2(image):
     height, width = image.shape
     out_image = np.empty((height-2,width-2))
@@ -24,7 +22,6 @@ def convolve_mean3(image):
                 out_image[i-1,j-1, k] = 0.25*(image[i-1,j, k]+image[i+1,j,k]+image[i,j-1,k]+image[i,j+1,k])
     return out_image
 
-#pythran export convolve_laplacien2(float64[][])
 """
 Definie l'operateur laplacien comme convolution : permet de detecter les bords dans une image
 """
@@ -42,7 +39,6 @@ def convolve_laplacien2(image):
     out_image *= 1./valmax
     return out_image
 
-#pythran export convolve_laplacien3(float64[][][])
 def convolve_laplacien3(image):
     height, width, d = image.shape
     out_image = np.empty((height-2,width-2, d))
@@ -57,8 +53,6 @@ def convolve_laplacien3(image):
     out_image *= 1./valmax
     return out_image
 
-#pythran export convolve_matrix2(float64[][], float64[][])
-#pythran export convolve_matrix3(float64[][][], float64[][])
 """
 Convolution generale avec une taille de stencil quelconque. Permet de definir tous les stencils que l'on souhaite !
 """
