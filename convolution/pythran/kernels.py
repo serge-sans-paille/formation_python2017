@@ -4,6 +4,8 @@ import numpy as np
 Definit une convolution faisant une moyenne des voisins d'un pixel donne
 ( stencil de 3x3 )
 """
+#pythran export convolve_mean(float64[][])
+#pythran export convolve_mean(float64[][][])
 #pythran export convolve_mean2(float64[][])
 #pythran export convolve_mean3(float64[][][])
 def convolve_mean2(image):
@@ -14,6 +16,7 @@ def convolve_mean2(image):
             # A vectoriser pour les eleves
             out_image[i-1,j-1] = 0.25*(image[i-1,j]+image[i+1,j]+image[i,j-1]+image[i,j+1])
     return out_image
+
 def convolve_mean3(image):
     height, width, d = image.shape
     out_image = np.empty((height-2,width-2, d))
@@ -23,6 +26,9 @@ def convolve_mean3(image):
                 # A vectoriser pour les eleves
                 out_image[i-1,j-1, k] = 0.25*(image[i-1,j, k]+image[i+1,j,k]+image[i,j-1,k]+image[i,j+1,k])
     return out_image
+
+def convolve_mean(image):
+    return  0.25*(image[0:-2,0:-2]+image[2:,0:-2]+image[0:-2,2:]+image[2:,2:])
 
 #pythran export convolve_laplacien2(float64[][])
 """
@@ -56,6 +62,18 @@ def convolve_laplacien3(image):
     valmax = max(1.,valmax)+1.E-9
     out_image *= 1./valmax
     return out_image
+
+#pythran export convolve_laplacien(float64[][])
+#pythran export convolve_laplacien(float64[][][])
+def convolve_laplacien(image):
+        out_image = np.abs(4*image[1:-1,1:-1] -
+                                       image[0:-2,1:-1] - image[2:,1:-1] -
+                                       image[1:-1,0:-2] - image[1:-1,2:])
+        # On renormalise l'image :
+        valmax = np.max(out_image.flat)
+        valmax = max(1.,valmax)+1.E-9
+        out_image *= 1./valmax
+        return out_image
 
 #pythran export convolve_matrix2(float64[][], float64[][])
 #pythran export convolve_matrix3(float64[][][], float64[][])
@@ -102,3 +120,8 @@ def convolve_matrix3(image, convolution_array) :
     valmax = max(1.,valmax)+1.E-9
     out_image *= 1./valmax
     return out_image
+
+#pythran export convolve_matrix(float64[][][], float64[][])
+#pythran export convolve_matrix(float64[][], float64[][])
+def convolve_matrix(image, convolution_array) :
+    return None
