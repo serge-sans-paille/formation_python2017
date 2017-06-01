@@ -123,5 +123,25 @@ def convolve_matrix3(image, convolution_array) :
 
 
 def convolve_matrix(image, convolution_array) :
-    return None
+    nx     = convolution_array.shape[1]
+    ny     = convolution_array.shape[0]
+    half_x = nx//2
+    half_y = ny//2
+    # A la creation, les pixels sont tous noirs, donc pas besoin de remettre a zero
+    # les valeurs des pixels
+
+    h = image.shape[0]
+    w = image.shape[1]
+    out_image = np.zeros_like(image[0:h-ny+1, 0:w-nx+1])
+
+    for jw in range(-half_y,ny-half_y):
+        for iw in range(-half_x,nx-half_x):
+            out_image[:,:] += convolution_array[jw+half_y,iw+half_x]*image[jw+half_y: jw +h -half_y,iw+half_x: iw + w -half_x]
+
+    # On renormalise l'image en ramenant les valeurs des couleurs entre 0 et 1
+    out_image = np.abs(out_image)
+    valmax = np.max(out_image.flat)
+    valmax = max(1.,valmax)+1.E-9
+    out_image *= 1./valmax
+    return out_image
 
