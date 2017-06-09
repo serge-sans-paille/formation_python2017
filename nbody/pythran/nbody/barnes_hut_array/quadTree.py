@@ -1,6 +1,6 @@
 import numpy as np
 from ..forces import force
-from .kernel import *
+from . import pythran_functions
 
 class quadArray:
     def __init__(self, bmin, bmax, size):
@@ -17,78 +17,7 @@ class quadArray:
         self.cell_radius[0] = self.box_size
 
     def buildTree(self, particles):
-        for ip, p in enumerate(particles):
-            center = self.center.copy()
-            box_size = self.box_size.copy()
-            x, y = p[:2]
-            cell = 0
-
-            childPath = 0
-            if x > center[0]:
-                childPath += 1
-            if y > center[1]:
-                childPath += 2
-
-            childIndex = self.nbodies + childPath
-
-            while (self.child[childIndex] > self.nbodies):
-                cell = self.child[childIndex] - self.nbodies
-                center[:] = self.cell_center[cell]
-                childPath = 0
-                if x > center[0]:
-                    childPath += 1
-                if y > center[1]:
-                    childPath += 2
-                childIndex = self.nbodies + 4*cell + childPath
-            # no particle on this cell, just add it
-            if (self.child[childIndex] == -1):
-                self.child[childIndex] = ip
-                self.child[ip] = cell
-            # this cell already has a particle
-            # subdivide and set the two particles
-            elif (self.child[childIndex] < self.nbodies):
-                npart = self.child[childIndex]
-
-                oldchildPath = newchildPath = childPath
-                while (oldchildPath == newchildPath):
-                    self.ncell += 1
-                    self.child[childIndex] = self.nbodies + self.ncell 
-                    center[:] = self.cell_center[cell]
-                    box_size = .5*self.cell_radius[cell]
-                    if (oldchildPath&1):
-                        center[0] += box_size[0]
-                    else:
-                        center[0] -= box_size[0]
-                    if ((oldchildPath>>1)&1):
-                        center[1] += box_size[1]
-                    else:
-                        center[1] -= box_size[1]
-
-                    oldchildPath = 0
-                    if particles[npart][0] > center[0]:
-                        oldchildPath += 1
-                    if particles[npart][1] > center[1]:
-                        oldchildPath += 2
-
-                    newchildPath = 0
-                    if p[0] > center[0]:
-                        newchildPath += 1
-                    if p[1] > center[1]:
-                        newchildPath += 2
-
-                    cell = self.ncell
-
-                    self.cell_center[self.ncell] = center
-                    self.cell_radius[self.ncell] = box_size
-
-                    childIndex = self.nbodies + 4*self.ncell + oldchildPath
-
-                self.child[childIndex] = npart
-                self.child[npart] = self.ncell
-
-                childIndex = self.nbodies + 4*self.ncell + newchildPath
-                self.child[childIndex] = ip
-                self.child[ip] = self.ncell
+        self.ncell = pythran_functions.buildTree(self.center, self.box_size, self.child, self.cell_center, self.cell_radius, particles)
 
     def computeMassDistribution(self, particles, mass):
         self.mass = np.zeros(self.nbodies + self.ncell + 1)
@@ -105,7 +34,7 @@ class quadArray:
         # print('center_of_mass', self.center_of_mass)
 
     def computeForce(self, p):
-        return compute_force(self.nbodies, self.child, self.center_of_mass, self.mass, self.cell_radius, p)
+        return pythran_functions.computeForce(self.nbodies, self.child, self.center_of_mass, self.mass, self.cell_radius, p)
 
     def __str__(self):
         indent = ' '*2
