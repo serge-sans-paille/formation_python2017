@@ -58,7 +58,7 @@ def simple_bench(title, function, n):
         end = time()
         timings.append(end -start)
     #print('[{}]: min: {}s, max: {}s, median: {}s, average: {}s'.format(title, min(timings), max(timings), sorted(timings)[n//2], sum(timings)/n))
-    print('[{}]: {}s'.format(title, sorted(timings)[n//2]))
+    print('[{0:>20}]: {1}s'.format(title, sorted(timings)[n//2]))
 
 if __name__ == '__main__':
     import sys
