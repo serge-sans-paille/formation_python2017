@@ -1,4 +1,5 @@
 import abc
+import os
 import numpy as np
 
 class convolution:
@@ -71,10 +72,16 @@ if __name__ == '__main__':
     parser.add_argument('engine', help='target engine')
     parser.add_argument('--show', action='store_true')
     parser.add_argument('--vectorize', action='store_true')
+    parser.add_argument('--omp', action='store_true')
     parser.add_argument('--count', default=10, type=int)
     args = parser.parse_args()
 
     sys.path.append(args.engine)
+
+    if not args.omp:
+        os.environ['OMP_NUM_THREADS'] = "1"
+        os.environ['OPENBLAS_NUM_THREADS'] = "1"
+
     import kernels
 
     img = gimage.gray_image(fileName='data/lena.png')
